@@ -15,29 +15,30 @@ services:
 
   backend:
     build:
-      context: .
+      context: backend
+      target: base
     container_name: resume_backend
     restart: always
     environment:
       DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/resume_db
       JWT_SECRET: supersecret
+      ENV: DEV
     depends_on:
     - db
     ports:
     - "8000:8000"
-    - "5678:5678"
+#    - "5678:5678"
 
 
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: ../Dockerfile.frontend
-  #   container_name: resume_frontend
-  #   restart: always
-  #   ports:
-  #   - "5173:80"
-  #   depends_on:
-  #   - backend
+  frontend:
+    build:
+      context: frontend
+    container_name: resume_frontend
+    restart: always
+    ports:
+    - "5173:80"
+    depends_on:
+    - backend
 
 volumes:
   db_data:

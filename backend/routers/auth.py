@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Response, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from schemas import UserCreate, Token
@@ -17,10 +17,35 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     token = create_access_token({"sub": str(new_user.id)})
     return Token(access_token=token)
 
-@router.post("/token", response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@router.post("/token")
+async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = crud.get_user_by_email(db, form_data.username)
     if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
-    token = create_access_token({"sub": str(user.id)})
-    return Token(access_token=token)
+
+    # token = create_access_token({"sub": str(user.id)})
+
+    # Устанавливаем токен в cookie
+    response.set_cookie(
+        key="access_token",
+        value=create_access_token({"sub": str(user.id)}),
+        httponly=True,
+        secure=False,         # только HTTPS
+        samesite="None",     # нужно для работы с фронтом на другом домене
+        max_age=60*60        # срок действия cookie
+    )
+
+    return {"message": "Login successful"}
+
+# @router.post("/token", response_model=Token)
+# def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+#     user = crud.get_user_by_email(db, form_data.username)
+#     if not user or not verify_password(form_data.password, user.password_hash):
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
+#     token = create_access_token({"sub": str(user.id)})
+#     return Token(access_token=token)
+
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie("access_token")
+    return {"message": "Logged out"}

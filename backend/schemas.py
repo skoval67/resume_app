@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import ConfigDict, BaseModel, EmailStr, Field
 from typing import Optional, List
 from datetime import datetime
 
@@ -28,5 +28,4 @@ class ResumeOut(ResumeCreate):
     created_at: datetime
     updated_at: datetime
     improvements: List[ResumeHistory] = []
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

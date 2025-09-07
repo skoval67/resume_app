@@ -1,16 +1,19 @@
-FROM python:3.11-slim
-
+FROM python:3.11-slim AS base
 
 WORKDIR /app
 
-
-COPY requirements.txt .
+COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
+EXPOSE 8000
 
-COPY . .
+ENTRYPOINT ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 
-EXPOSE 8000 5678
+FROM base AS debug
+
+RUN pip install debugpy
+
+EXPOSE 5678
 
 ENTRYPOINT ["python", "-Xfrozen_modules=off", "-m", "debugpy", "--listen", "0.0.0.0:5678", "--wait-for-client", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]

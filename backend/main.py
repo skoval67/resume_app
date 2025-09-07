@@ -1,23 +1,41 @@
 import logging
+import subprocess
 from time import time
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
 from routers.auth import router as auth_router
 from routers.resumes import router as resume_router
+from config import settings
 
 
 logger = logging.getLogger("resume_app")
 logging.basicConfig(level=logging.INFO)
 
+
 class ResumeApp(FastAPI):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Создаем все таблицы (для dev, при проде используем Alembic)
-        Base.metadata.create_all(bind=engine)
+        if settings.ENV == "DEV":
+            # В dev создаём таблицы автоматически
+            Base.metadata.create_all(bind=engine)
+        elif settings.ENV == "PROD":
+            # В prod прогоняем alembic миграции
+            logging.info("Running migrations...")
+            try:
+                subprocess.run(
+                    ["alembic", "upgrade", "head"],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                )
+                logging.info("Migrations applied successfully")
+            except subprocess.CalledProcessError as e:
+                logging.error(f"Migration failed: {e.stderr}")
+                raise
 
-        # Регистрируем маршрут
+        # Служебный маршрут
         @self.get("/status")
         async def status():
             return {"status": "ok"}
