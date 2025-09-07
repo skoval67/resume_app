@@ -23,27 +23,17 @@ async def login(response: Response, form_data: OAuth2PasswordRequestForm = Depen
     if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
 
-    # token = create_access_token({"sub": str(user.id)})
-
     # Устанавливаем токен в cookie
     response.set_cookie(
         key="access_token",
         value=create_access_token({"sub": str(user.id)}),
-        httponly=True,
+        httponly=False,
         secure=False,         # только HTTPS
-        samesite="None",     # нужно для работы с фронтом на другом домене
-        max_age=60*60        # срок действия cookie
+        samesite="lax",       # нужно для работы с фронтом на другом домене
+        max_age=60*60         # срок действия cookie
     )
 
     return {"message": "Login successful"}
-
-# @router.post("/token", response_model=Token)
-# def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-#     user = crud.get_user_by_email(db, form_data.username)
-#     if not user or not verify_password(form_data.password, user.password_hash):
-#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
-#     token = create_access_token({"sub": str(user.id)})
-#     return Token(access_token=token)
 
 @router.post("/logout")
 async def logout(response: Response):

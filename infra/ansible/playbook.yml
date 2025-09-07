@@ -1,0 +1,19 @@
+---
+- name: Check all systems are ready
+  hosts: all
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Wait for system to become reachable
+      ansible.builtin.wait_for_connection:
+
+- name: Setup VPS
+  hosts: srvr
+  become: true
+  roles:
+    - osupgrade
+    - system-hardering
+    - role: docker_install
+      vars:
+        init_swarm: true
+    - prepare

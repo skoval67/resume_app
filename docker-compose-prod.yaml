@@ -14,25 +14,20 @@ services:
 
 
   backend:
-    build:
-      context: backend
-      target: debug
+    image: ghcr.io/skoval67/resume_app/backend:latest
     container_name: resume_backend
     restart: always
     environment:
       DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/resume_db
-      JWT_SECRET: supersecret
-      ENV: DEV
+      JWT_SECRET: ${JWT_SECRET}
+      ENV: PROD
     depends_on:
     - db
     ports:
     - "8000:8000"
-    - "5678:5678"
-
 
   frontend:
-    build:
-      context: frontend
+    image: ghcr.io/skoval67/resume_app/frontend:latest
     container_name: resume_frontend
     restart: always
     ports:

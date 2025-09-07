@@ -1,0 +1,66 @@
+---
+# tasks file for Debian osupgrade
+- name: Fix Repository 'Debian bookworm' changed its 'firmware component' value from 'non-free' to 'non-free-firmware' warning
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list
+    regexp: '^(.*bookworm main)$'
+    replace: '\1 non-free-firmware'
+
+- name: Update apt repo and cache
+  ansible.builtin.apt:
+    update_cache: true
+    name: psmisc
+    state: present
+
+- name: Wait for APT Lock
+  ansible.builtin.shell: |
+    while sudo fuser /var/lib/{{ item }} >/dev/null 2>&1; do sleep 5; done;
+  loop: "{{ locked }}"
+  retries: 5
+  delay: 3
+  changed_when: false
+
+- name: Upgrade all packages on servers
+  ansible.builtin.apt:
+    upgrade: full
+  async: 3600
+  poll: 0
+
+- name: Wait for APT Lock
+  ansible.builtin.shell: |
+    while sudo fuser /var/lib/{{ item }} >/dev/null 2>&1; do sleep 5; done;
+  loop: "{{ locked }}"
+  retries: 5
+  delay: 3
+  changed_when: false
+
+- name: Check if a reboot is needed on all servers
+  register: reboot_required_file
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+    get_checksum: false
+  retries: 5
+
+- name: Reboot the server if kernel updated
+  ansible.builtin.reboot:
+    msg: "Reboot initiated by Ansible for kernel updates"
+    connect_timeout: 5
+    reboot_timeout: 900
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    test_command: uptime
+  when: reboot_required_file.stat.exists
+  changed_when: false
+
+- name: Wait for APT Lock
+  ansible.builtin.shell: |
+    while sudo fuser /var/lib/{{ item }} >/dev/null 2>&1; do sleep 5; done;
+  loop: "{{ locked }}"
+  retries: 5
+  delay: 3
+  changed_when: false
+
+- name: Remove dependencies that are no longer required
+  ansible.builtin.apt:
+    autoremove: true
+    autoclean: true

@@ -1,0 +1,24 @@
+---
+# tasks file
+- name: Create user for the application
+  ansible.builtin.user:
+    name: app
+    comment: Resume app service user
+    uid: 989
+    group: users
+    groups: docker
+    append: true
+    generate_ssh_key: true
+    ssh_key_type: ed25519
+
+- name: Get pub key
+  ansible.builtin.command:
+    cmd: cat /home/app/.ssh/id_ed25519.pub
+  register: out
+  changed_when: false
+
+- name: Set authorized key
+  ansible.posix.authorized_key:
+    user: app
+    state: present
+    key: "{{ out.stdout }}"

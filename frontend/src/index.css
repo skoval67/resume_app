@@ -2,4 +2,8 @@
 body {
   margin: 0;
   font-family: sans-serif;
+  .flex-container {
+    display: flex; /* Включает режим Flexbox */
+    align-items: flex-start; /* Выравнивает элементы по верхней границе */
+  };
 }

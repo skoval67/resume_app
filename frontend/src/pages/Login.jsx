@@ -1,24 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../api";
 import { login } from "../api";
 
-export default function Login() {
+export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const setToken = useAuthStore(s => s.setToken);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
     try {
-      const data = await login(email, password);
-      if (data.access_token) {
-        setToken(data.access_token);
-        navigate("/resumes");
-      } else {
-        alert("Ошибка авторизации");
-      }
+      await login(email, password);
+      onLogin(); // обновляем state в App.jsx
+      navigate("/resumes");
     } catch (err) {
       alert("Ошибка: " + err.message);
     }

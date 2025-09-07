@@ -1,0 +1,8 @@
+# tasks file for osupgrade
+- name: Update debian systems
+  ansible.builtin.include_tasks: Debian.yml
+  when: ansible_distribution == 'Debian'
+
+- name: Update centos systems
+  ansible.builtin.include_tasks: Centos.yml
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'AlmaLinux'

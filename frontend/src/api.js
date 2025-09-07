@@ -1,34 +1,13 @@
-// import { useAuthStore } from "store/auth";
-import { create } from "zustand";
-
-export const useAuthStore = create(set => ({
-  token: null,
-  setToken: (token) => set({ token }),
-  logout: () => set({ token: null }),
-}));
-
-export async function login(email, password) {
-  const formData = new URLSearchParams();
-  formData.append("username", email);
-  formData.append("password", password);
-
-  const res = await fetch("http://localhost:8000/auth/token", {
-        method: "POST",
-        body: formData,
-    });
-    return await res.json();
-}
+// const API_HOST = "http://localhost";
+const API_HOST = "http://resume.tripleap.ru";
 
 export async function apiFetch(url, options = {}) {
-  const token = useAuthStore.getState().token;
-
   const headers = {
     "Content-Type": "application/json",
-    // ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
-  const response = await fetch(`http://localhost:8000${url}`, {
+  const response = await fetch(`${API_HOST}/api${url}`, {
     ...options,
     headers,
     credentials: "include", // ВАЖНО: отправлять cookie
@@ -40,6 +19,20 @@ export async function apiFetch(url, options = {}) {
   }
 
   return response.json();
+}
+
+export async function login(email, password) {
+  const formData = new URLSearchParams();
+  formData.append("username", email);
+  formData.append("password", password);
+
+  return apiFetch("/auth/token", {
+    method: "POST",
+    body: formData,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  })
 }
 
 export function getResumes() {
@@ -59,6 +52,5 @@ export function getResume(id) {
 
 export function improveResume(id) {
   return apiFetch(`/resumes/${id}/improve`, {
-    // method: "POST",
   });
 }

@@ -1,0 +1,22 @@
+---
+# vars file for skill
+requirements:
+  Debian:
+    - ca-certificates
+    - curl
+    - gnupg
+    - python3-pip
+    - python3-docker
+    - python3-setuptools
+  CentOS:
+    - dnf-plugins-core
+    - python3-pip
+    - python3-docker
+    - python3-setuptools
+
+dpackages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin

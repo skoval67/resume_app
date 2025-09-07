@@ -3,6 +3,7 @@ import subprocess
 from time import time
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import inspect
 from database import engine, Base
 from routers.auth import router as auth_router
 from routers.resumes import router as resume_router
@@ -21,7 +22,13 @@ class ResumeApp(FastAPI):
             # В dev создаём таблицы автоматически
             Base.metadata.create_all(bind=engine)
         elif settings.ENV == "PROD":
-            # В prod прогоняем alembic миграции
+            inspector = inspect(engine)
+            tables = inspector.get_table_names()
+            if not tables:
+                logging.info("No tables found — creating schema...")
+                Base.metadata.create_all(bind=engine)
+
+            # Прогоняем alembic миграции
             logging.info("Running migrations...")
             try:
                 subprocess.run(
@@ -65,4 +72,4 @@ class ResumeApp(FastAPI):
             return response
 
 
-app = ResumeApp(title="Resume API", version="1.0.0", description="API для работы с резюме")
+app = ResumeApp(title="Resume API", version="1.0.0", description="API для работы с резюме", root_path="/api")

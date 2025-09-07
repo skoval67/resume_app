@@ -1,0 +1,2 @@
+ifname: eth0
+init_swarm: false

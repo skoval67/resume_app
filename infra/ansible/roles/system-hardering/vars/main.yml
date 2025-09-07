@@ -1,0 +1,15 @@
+---
+# vars file for system-hardening
+sshd_config: /etc/ssh/sshd_config
+
+needed:
+  Debian:
+    - fail2ban
+    - nmap
+    - net-tools
+  CentOS:
+    - epel-release
+    - fail2ban
+    - nmap
+    - net-tools
+    - bind-utils

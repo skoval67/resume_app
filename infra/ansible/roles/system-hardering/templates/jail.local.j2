@@ -1,0 +1,38 @@
+{{ ansible_managed | comment }}
+
+# Fail2Ban local configuration file.
+# Overrides changes in the main jail file, /etc/fail2ban/jail.conf
+# Use this file to change local settings. 
+
+[DEFAULT]
+
+# "ignoreip" can be an IP address, a CIDR mask or a DNS host
+ignoreip = {{ fail2ban_ignoreips | join(' ') }}
+
+#
+# JAILS
+#
+
+# Next jails corresponds to the standard configuration in Fail2ban 0.6 which
+# was shipped in Debian. Enable any defined here jail by including
+#
+# [SECTION_NAME]
+# enabled = true
+
+#
+# in /etc/fail2ban/jail.local.
+#
+# Optionally you may override any other parameter (e.g. banaction,
+# action, port, logpath, etc) in that section within jail.local
+
+
+{% for service in fail2ban_services %}
+[{{ service.name }}]
+enabled = {{ service.enabled | default(true) | bool | to_json }}
+{% for option, value in service.items() | sort %}
+{% if option not in ['name', 'enabled'] %}
+{{ option }} = {{ value }}
+{% endif %}
+{% endfor %}
+
+{% endfor %}

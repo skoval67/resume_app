@@ -1,0 +1,4 @@
+locked:
+  - dpkg/lock
+  - dpkg/lock-frontend
+  - apt/lists/lock

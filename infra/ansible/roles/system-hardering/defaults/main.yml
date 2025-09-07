@@ -1,0 +1,8 @@
+---
+# defaults file for system-hardening
+fail2ban_ignoreips:
+  - 127.0.0.1/8
+  - ::1
+
+fail2ban_services:
+  - name: sshd
