@@ -27,7 +27,16 @@ jobs:
       with:
         python-version: 3.12
 
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Check for API changes
+      run: |
+        if git diff --quiet HEAD^ HEAD -- backend/; then
+          echo "API_CHANGED=false" >> $GITHUB_ENV
+        else
+          echo "API_CHANGED=true" >> $GITHUB_ENV
+        fi
 
     - name: Install dependencies
       run: |
@@ -84,6 +93,7 @@ jobs:
           !default:debug
 
     - name: Build and push
+      if: env.API_CHANGED == 'true'
       uses: docker/build-push-action@v6
       with:
         push: true
@@ -118,6 +128,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Check for code changes
+      run: |
+        if git diff --quiet HEAD^ HEAD -- frontend/; then
+          echo "API_CHANGED=false" >> $GITHUB_ENV
+        else
+          echo "API_CHANGED=true" >> $GITHUB_ENV
+        fi
+
     - name: Log in to the Container registry
       uses: docker/login-action@v3
       with:
@@ -141,6 +159,7 @@ jobs:
           type=sha,prefix=
 
     - name: Build and push
+      if: env.API_CHANGED == 'true'
       uses: docker/build-push-action@v6
       with:
         push: true
